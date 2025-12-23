@@ -43,11 +43,7 @@ bool string_ends_with(string source, string ending) {
 string string_alloc(size_t len) {
     char* raw = malloc(len);
 
-    if (raw == nullptr) return NULL_STR;
-
     memset(raw, '\0', len);
-
-    raw[len] = '\0';
 
     return (string){raw, len};
 

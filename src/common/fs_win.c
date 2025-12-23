@@ -35,6 +35,7 @@ FsFile* fs_open(const char* path, bool create, bool overwrite) {
     }
 
     if ((void*) f->handle == INVALID_HANDLE_VALUE) {
+        free(f);
         return nullptr;
     }
 

@@ -11,7 +11,9 @@
 #include <sys/stat.h>
 
 bool fs_real_path(const char* path, FsPath* out) {
-    if (!realpath(path, out->raw)) return true;
+    if (!realpath(path, out->raw)) {
+        return false;
+    }
     out->len = strlen(out->raw);
     return true;
 }
@@ -28,7 +30,10 @@ FsFile* fs_open(const char* path, bool create, bool overwrite) {
         f->handle = open(path, O_RDONLY);
     }
     
-    if (f->handle == -1) return nullptr;
+    if (f->handle == -1) {
+        free(f);
+        return nullptr;
+    }
 
     struct stat info;
     fstat(f->handle, &info);
