@@ -11,9 +11,7 @@
 #include <sys/stat.h>
 
 bool fs_real_path(const char* path, FsPath* out) {
-    if (!realpath(path, out->raw)) {
-        return false;
-    }
+    if (!realpath(path, out->raw)) return true;
     out->len = strlen(out->raw);
     return true;
 }
@@ -22,18 +20,15 @@ FsFile* fs_open(const char* path, bool create, bool overwrite) {
     FsFile* f = malloc(sizeof(FsFile));
     if (create) {
         if (overwrite) {
-            f->handle = open(path, O_WRONLY | O_CREAT);
+            f->handle = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         } else {
-            f->handle = open(path, O_WRONLY);
+            f->handle = open(path, O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
         }
     } else {
         f->handle = open(path, O_RDONLY);
     }
     
-    if (f->handle == -1) {
-        free(f);
-        return nullptr;
-    }
+    if (f->handle == -1) return nullptr;
 
     struct stat info;
     fstat(f->handle, &info);
