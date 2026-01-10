@@ -3,7 +3,15 @@
 
 #include "common/fs.h"
 
-#ifdef OS_LINUX
+#ifdef OS_UNIX
+
+#if defined(OS_MACOS)
+    #define STAT_MTIME_SEC(st)  ((st).st_mtimespec.tv_sec)
+    #define STAT_MTIME_NSEC(st) ((st).st_mtimespec.tv_nsec)
+#else
+    #define STAT_MTIME_SEC(st)  ((st).st_mtim.tv_sec)
+    #define STAT_MTIME_NSEC(st) ((st).st_mtim.tv_nsec)
+#endif
 
 #include <dirent.h>
 #include <unistd.h>
@@ -19,15 +27,25 @@ bool fs_real_path(const char* path, FsPath* out) {
 }
 
 FsFile* fs_open(const char* path, bool create, bool overwrite) {
+    u32 flags = 0;
+
     FsFile* f = malloc(sizeof(FsFile));
+
     if (create) {
+        flags |= O_WRONLY;
+
         if (overwrite) {
-            f->handle = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-        } else {
-            f->handle = open(path, O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            flags = O_TRUNC | O_CREAT;
         }
     } else {
-        f->handle = open(path, O_RDONLY);
+        flags |= O_RDONLY;
+    }
+
+    if (flags & O_CREAT) {
+        //when creating, also set file permissions.
+        f->handle = open(path, flags, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    } else {
+        f->handle = open(path, flags);
     }
 
     if (f->handle == -1) {
@@ -40,7 +58,9 @@ FsFile* fs_open(const char* path, bool create, bool overwrite) {
     f->id = info.st_ino;
     f->size = info.st_size;
     // convert to microseconds, that's easier and more reliable to deal with in 64 bits
-    f->last_modified = ((usize)info.st_mtim.tv_sec * 1000000) + (usize)info.st_mtim.tv_nsec / 1000;
+    f->last_modified = ((usize)STAT_MTIME_SEC(info) * 1000000) +
+                        (usize)STAT_MTIME_NSEC(info) / 1000;
+
     fs_real_path(path, &f->path);
     return f;
 }

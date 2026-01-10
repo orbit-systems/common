@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "common/portability.h"
 #include "common/util.h"
 #include "common/arena.h"
 

@@ -1,9 +1,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "common/portability.h"
 #include "common/vec.h"
-
-#define WEAK __attribute((weak))
 
 WEAK Vec(void) _vec_new(size_t stride, size_t initial_cap) {
     if (initial_cap < 2) {

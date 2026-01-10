@@ -2,6 +2,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "common/portability.h"
 #include "common/str.h"
 
 string strprintf(char* format, ...) {

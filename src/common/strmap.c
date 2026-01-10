@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "common/portability.h"
 #include "common/util.h"
 #include "common/strmap.h"
 

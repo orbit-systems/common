@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include "common/type.h"
+
 // strings and string-related utils.
 
 typedef struct string {
