@@ -59,6 +59,29 @@ typedef struct VecHeader {
 #define vec_destroy(vecptr) _vec_destroy((void**)_vec_assert_ptr_ptr(vecptr))
 /// Peek at the last element of a vector.
 #define vec_peek(vec) (vec)[vec_len(vec)-1]
+/// Remove the element at `index` and replace it with the last element in the vector `vecptr`.
+#define vec_remove_unordered(vecptr, index) do {            \
+    _vec_assert_ptr_ptr(vecptr);                            \
+    if (index < vec_len(*vecptr)) {                         \
+        (*vecptr)[index] = (*vecptr)[vec_len(*vecptr) - 1]; \
+        vec_len(*vecptr) -= 1;                              \
+    }                                                       \
+} while (0)
+/// Remove the element at `index` and copy the rest of the elements forward.
+#define vec_remove_ordered(vecptr, index) do {  \
+    _vec_assert_ptr_ptr(vecptr);                \
+    usize _length = vec_len(*vecptr);           \
+    if (index < _length - 1) {                  \
+        memcpy(                                 \
+            &(*vecptr)[index],                  \
+            &(*vecptr)[index + 1],              \
+            (_length - index - 1) * vec_stride(*vecptr) \
+        );                                      \
+    }                                           \
+    if (index < _length) {                      \
+        vec_len(*vecptr) -= 1;                  \
+    }                                           \
+} while (0)
 
 Vec(void) _vec_new(size_t stride, size_t initial_cap);
 void _vec_reserve(Vec(void)* v, size_t stride, size_t slots);
