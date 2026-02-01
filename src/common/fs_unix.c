@@ -35,7 +35,7 @@ FsFile* fs_open(const char* path, bool create, bool overwrite) {
         flags |= O_WRONLY;
 
         if (overwrite) {
-            flags = O_TRUNC | O_CREAT;
+            flags |= O_TRUNC | O_CREAT;
         }
     } else {
         flags |= O_RDONLY;
