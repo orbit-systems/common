@@ -72,7 +72,7 @@ typedef struct VecHeader {
     _vec_assert_ptr_ptr(vecptr);                \
     usize _length = vec_len(*vecptr);           \
     if (index < _length - 1) {                  \
-        memcpy(                                 \
+        memmove(                                \
             &(*vecptr)[index],                  \
             &(*vecptr)[index + 1],              \
             (_length - index - 1) * vec_stride(*vecptr) \
