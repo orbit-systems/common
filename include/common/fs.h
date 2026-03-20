@@ -21,6 +21,10 @@
     #error "Unsupported OS. Go harass sandwichman about it."
 #endif
 
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
+
 typedef struct FsPath {
     u16 len;
     char raw[PATH_MAX];
