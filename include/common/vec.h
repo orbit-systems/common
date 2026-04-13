@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common/str.h"
 
 ///
 /// +--------+--------+--------+--------+--------+--------+
@@ -37,7 +38,7 @@ typedef struct VecHeader {
 /// This vector's `VecHeader`.
 #define vec_header(vec) ((VecHeader*)((char*)(vec) - sizeof(VecHeader)))
 /// Get the pointer to a vec's elements from the header.
-#define vec_elems_from_header(header) ((void*)((char*)(header) + sizeof(VecHeader)))
+#define vec_elems_from_header(header) ((void*)((u8*)(header) + sizeof(VecHeader)))
 /// This vector's length.
 #define vec_len(vec) vec_header(vec)->len
 /// This vector's capacity.
@@ -89,4 +90,9 @@ void _vec_reserve1(Vec(void)* v, size_t stride);
 void _vec_shrink(Vec(void)* v, size_t stride);
 void _vec_destroy(Vec(void)* v);
 
+/* string specifics */
+
+Vec(char) cstring_to_vec(char* str); // always reallocates str
+Vec(char) string_to_vec(string str); // same
+void vec_appendf(Vec(char) str, const char* format, ...) FORMAT_CHECK(2, 3);
 #endif // VEC_H

@@ -4,12 +4,14 @@
 #include <stdlib.h>
 
 #include "common/type.h"
+#include "common/portability.h"
+#include "common/util.h"
 
 // strings and string-related utils.
 
 typedef struct string {
     char*  raw;
-    size_t len;
+    usize len;
 } string;
 
 #define NULL_STR ((string){nullptr, 0})
@@ -27,17 +29,23 @@ typedef struct string {
 #define string_wrap(cstring) ((string){(char*)(cstring), strlen((cstring))})
 #define strlit(cstring) ((string){(char*)cstring, sizeof(cstring)-1})
 
+#define string_lt(a, b) (string_cmp((a), (b)) < 0)
+#define string_gt(a, b) (string_cmp((a), (b)) > 0)
+#define string_le(a, b) (string_cmp((a), (b)) <= 0)
+#define string_ge(a, b) (string_cmp((a), (b)) >= 0)
+
+#define string_free(str) free(str.raw)
+
 char*  clone_to_cstring(string str); // this allocates
 void   printstr(string str);
-string strprintf(char* format, ...);
+string strprintf(char* format, ...) FORMAT_CHECK(1, 2);
 
-string  string_alloc(size_t len);
-#define string_free(str) free(str.raw)
+string  string_alloc(usize len);
 string  string_clone(string str); // this allocates as well
 string  string_concat(string a, string b); // allocates
-void  string_concat_buf(string buf, string a, string b); // this does not
+void    string_concat_buf(string buf, string a, string b); // this does not
 
-int  string_cmp(string a, string b);
+u8   string_cmp(string a, string b);
 bool string_eq(string a, string b);
 bool string_ends_with(string source, string ending);
 

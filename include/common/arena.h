@@ -13,7 +13,7 @@ typedef struct ArenaState {
 
 void arena_init(Arena* arena);
 void arena_destroy(Arena* arena);
-void* arena_alloc(Arena* arena, usize size, usize align);
+void* arena_alloc(Arena* arena, usize size, usize align) ALLOC_ALIGN(2, 3);
 
 ArenaState arena_save(Arena* arena);
 void arena_restore(Arena* arena, ArenaState save);
