@@ -38,6 +38,9 @@
     #define FALLTHROUGH __attribute__((fallthrough))
     #define UNUSED __attribute__((unused))
     #define NORETURN __attribute__((noreturn))
+    #define ALLOC_ALIGN(sz, al) __attribute__((malloc, alloc_size(sz), alloc_align(al)))
+    #define ALLOC_SIZE(sz) __attribute__((malloc, alloc_size(sz)))
+    #define FORMAT_CHECK(fmt_pos, args_pos) __attribute__((format(printf, fmt_pos, args_pos)))
 #elif defined(_MSC_VER)
     #define WEAK __declspec(selectany)
     #define INLINE __forceinline

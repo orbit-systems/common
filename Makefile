@@ -26,6 +26,7 @@ $(COMMON_OUT_DIR)/%.o: src/common/%.c
 .PHONY: clean
 clean:
 	rm -rf $(COMMON_OUT_DIR)
+	@mkdir -p $(COMMON_OUT_DIR)
 
 # generate compile commands with bear if u got it!!! 
 # very good highly recommended ʕ·ᴥ·ʔ

@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "common/portability.h"
 #include "common/vec.h"
@@ -39,4 +40,56 @@ WEAK void _vec_shrink(Vec(void)* v, size_t stride) {
 WEAK void _vec_destroy(Vec(void)* v) {
     free(vec_header(*v));
     *v = nullptr;
+}
+
+/* string specifics */
+
+Vec(char) string_to_vec(string str) {
+    Vec(char) v = vec_new(char, str.len);
+
+    memcpy(v, str.raw, str.len);
+    return v;
+}
+
+static inline Vec(char) cstring_to_vec(const char* str) {
+    return string_to_vec(string_wrap(str));
+}
+
+Vec(char) realloc_string_to_vec(string str) {
+    // The assumption is that you make a vec to append to it, so we reserve
+    // more up-front.
+    str.raw = realloc(str.raw, str.len * 1.5 + sizeof(VecHeader));
+
+    // memmove so that strings can overlap.
+    memmove(str.raw, (u8*)str.raw + sizeof(VecHeader), str.len);
+
+    Vec(char) v = vec_elems_from_header(str.raw);
+
+    if (v == nullptr)
+        return nullptr;
+
+    vec_cap(v) += str.len / 2;
+    vec_len(v) = str.len;
+
+    return v;
+}
+
+static inline Vec(char) realloc_cstring_to_vec(char* str) {
+    return realloc_string_to_vec(string_wrap(str));
+}
+
+void vec_appendf(Vec(char) str, const char* format, ...) {
+    va_list a;
+    va_start(a, format);
+    va_list b;
+    va_copy(b, a);
+
+    usize printlen = 1 + vsnprintf("", 0, format, a);
+
+    vec_reserve(&str, printlen);
+
+    vsnprintf(&str[vec_len(str)], printlen, format, b);
+
+    va_end(a);
+    va_end(b);
 }
