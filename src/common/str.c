@@ -45,11 +45,11 @@ bool string_ends_with(string source, string ending) {
     return string_eq(substring_len(source, source.len-ending.len, ending.len), ending);
 }
 
-inline string string_alloc(usize len) {
+static inline string string_alloc(usize len) {
     return (string){calloc(len, sizeof(char*)), len};
 };
 
-u8 string_cmp(string a, string b) {
+isize string_cmp(string a, string b) {
     // copied from odin's implementation lmfao
     int res = memcmp(a.raw, b.raw, a.len < b.len ? a.len : b.len);
     if (res == 0 && a.len != b.len) return a.len <= b.len ? -1 : 1;
@@ -57,11 +57,15 @@ u8 string_cmp(string a, string b) {
     return res;
 }
 
-inline bool string_eq(string a, string b) {
-    return a.len == 0 || (a.len == b.len && string_cmp(a, b) == 0);
+bool string_eq(string a, string b) {
+    if (a.len != b.len) return false;
+    for (size_t i = 0; i < a.len; ++i) {
+        if (a.raw[i] != b.raw[i]) return false;
+    }
+    return true;
 }
 
-inline char* clone_to_cstring(string str) {
+static inline char* clone_to_cstring(string str) {
     // NOTE: the returned char* is always allocated, so no null literal
     // (otherwise subsequent realloc results in undefined behaviour).
     // The last null character is always allocated internally.
@@ -80,6 +84,6 @@ void printn(char* text, usize len) {
         putchar(text[c++]);
 }
 
-inline void printstr(string str) {
+static inline void printstr(string str) {
     printn(str.raw, str.len);
 }

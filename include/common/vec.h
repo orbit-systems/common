@@ -92,7 +92,6 @@ void _vec_destroy(Vec(void)* v);
 
 /* string specifics */
 
-
 /// \brief Copies string to newly allocated owned vector.
 ///
 /// \param str source slice to copy
@@ -117,7 +116,7 @@ Vec(char) string_to_vec(string str);
 /// It may be preferable to create a vector in-place to reduce fragmentation.
 /// For dynamically allocated C strings,
 /// \see realloc_string_to_vec
-Vec(char) cstring_to_vec(const char* str);
+static inline Vec(char) cstring_to_vec(const char* str);
 
 /// \brief Takes ownership of string and creates a char vector.
 ///
@@ -155,7 +154,7 @@ Vec(char) realloc_string_to_vec(string str);
 ///
 /// For a copy only function,
 /// \see cstring_to_vec
-Vec(char) realloc_cstring_to_vec(char* str);
+static inline Vec(char) realloc_cstring_to_vec(char* str);
 
 /// \brief Format print to the end of a char vec
 ///

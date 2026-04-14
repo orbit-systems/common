@@ -44,7 +44,7 @@ typedef struct string {
 ///               buffer is zero-filled.
 ///
 /// \note a null-terminated string can be allocated by providing len + 1.
-string string_alloc(usize len);
+static inline string string_alloc(usize len);
 
 /// \brief Clones the source string to owned C string.
 ///
@@ -53,12 +53,12 @@ string string_alloc(usize len);
 /// \return cstring Owned null terminated C string.
 ///
 /// \see clone_to_string
-char* clone_to_cstring(string str); // this allocates
+static inline char* clone_to_cstring(string str);
 
 /// \brief Prints a string
 ///
 /// Emits each character up to the sources length to stdout.
-void printstr(string str);
+static inline void printstr(string str);
 
 /// \brief Prints to a newly allocated string.
 ///
@@ -75,14 +75,14 @@ string strprintf(char* format, ...) FORMAT_CHECK(1, 2);
 /// \return string Owned string
 ///
 /// \see clone_to_cstring
-string string_clone(string str); // this allocates as well
+string string_clone(string str);
 
 /// \brief Concatenates two strings.
 ///
 /// Allocates a buffer containing the concatenation of a and b.
 ///
 /// \return str Allocated string containing ab, without a null terminator.
-string string_concat(string a, string b); // allocates
+string string_concat(string a, string b);
 
 /// \brief Concatenates two strings into buf.
 ///
@@ -90,7 +90,7 @@ string string_concat(string a, string b); // allocates
 ///            buf is filled with the concatenation ab, without a null terminator
 ///
 /// \warning buffer must be large enough contain a and b, crashes otherwise.
-void string_concat_buf(string buf, string a, string b); // this does not
+void string_concat_buf(string buf, string a, string b);
 
 /// \brief Compares two strings.
 ///
@@ -101,7 +101,7 @@ void string_concat_buf(string buf, string a, string b); // this does not
 /// checks before checking character by character.
 ///
 /// \see string_eq
-u8 string_cmp(string a, string b);
+isize string_cmp(string a, string b);
 
 /// \brief Checks if two strings are equal.
 ///

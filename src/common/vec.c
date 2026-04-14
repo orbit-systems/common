@@ -51,7 +51,7 @@ Vec(char) string_to_vec(string str) {
     return v;
 }
 
-inline Vec(char) cstring_to_vec(const char* str) {
+static inline Vec(char) cstring_to_vec(const char* str) {
     return string_to_vec(string_wrap(str));
 }
 
@@ -74,7 +74,7 @@ Vec(char) realloc_string_to_vec(string str) {
     return v;
 }
 
-inline Vec(char) realloc_cstring_to_vec(char* str) {
+static inline Vec(char) realloc_cstring_to_vec(char* str) {
     return realloc_string_to_vec(string_wrap(str));
 }
 
