@@ -5,7 +5,14 @@
 
 #include "common/str.h"
 
-// Prints to a new string. The result is guaranteed to be null terminated.
+/**
+ * @brief Prints to a newly allocated string.
+ *
+ * @param format printf format specifier
+ * @param ... printf format arguments
+ *
+ * @result str null-terminated string, or NULL_STR on allocation fail.
+ */
 string strprintf(char* format, ...) {
     string c = NULL_STR;
     va_list a;
@@ -21,16 +28,27 @@ string strprintf(char* format, ...) {
     return c;
 }
 
-// Allocates a buffer containing the concatenation of a and b.
-// The result is not guaranteed to be null terminated.
+/**
+ * @brief concats two strings
+ *
+ * Allocates a buffer containing the concatenation of a and b.
+ *
+ * @result str Allocated string containing ab, without a null terminator.
+ */
 string string_concat(string a, string b) {
     string c = string_alloc(a.len + b.len);
     string_concat_buf(c, a, b);
     return c;
 }
 
-// Concatenates two strings into buf. The buffer size is unchecked, so you must
-// ensure it can contain at least a length of a.len + b.len. Crashes otherwise.
+/**
+ * @brief Concatenates two strings into buf.
+ *
+ * @param[out] buf buffer of minimum length a.len + b.len.
+ *             buf is filled with the concatenation ab, without a null terminator
+ *
+ * @warning buffer must be large enough contain a and b, crashes otherwise.
+ */
 void string_concat_buf(string buf, string a, string b) {
     if (buf.len < a.len + b.len)
         CRASH("Buffer is too small. %zu < %zu + %zu", buf.len, a.len, b.len);
@@ -50,12 +68,32 @@ bool string_ends_with(string source, string ending) {
     return string_eq(substring_len(source, source.len-ending.len, ending.len), ending);
 }
 
-// Returns a buffer strictly of size len. The result is zero-filled.
+/**
+ * @brief Allocates len bytes for a new string
+ *
+ * @param len Length of buffer
+ * 
+ * @return string A string with a buffer of at least length len. The resulting 
+ *                buffer is zero-filled.
+ *
+ * @note a null-terminated string can be allocated by providing len + 1.
+ */
 inline string string_alloc(usize len) {
     return (string){calloc(len, sizeof(char*)), len};
-} ALLOC_SIZE(1);
+};
 
 // returns 0 when equal, -1 when a < b, and 1 when a > b
+/**
+ * @brief Compares two strings.
+ *
+ * @return cond Returns 0 when equal, -1 when a < b, and 1 when a > b
+ *              (their byte-wise, aggregate u8 difference is used to compare).
+ *
+ * @note for equality, string_eq is more efficient, using heuristic length 
+ * checks before checking character by character.
+ *
+ * @see string_eq
+ */
 u8 string_cmp(string a, string b) {
     // copied from odin's implementation lmfao
     int res = memcmp(a.raw, b.raw, a.len < b.len ? a.len : b.len);
@@ -64,11 +102,26 @@ u8 string_cmp(string a, string b) {
     return res;
 }
 
+/**
+ * @brief checks if two strings are equal.
+ *
+ * @return true if equal, else false
+ *
+ * @see string_cmp
+ */
 inline bool string_eq(string a, string b) {
     return a.len == 0 || (a.len == b.len && string_cmp(a, b) == 0);
 }
 
-// Allocates a null-terminated C string, and copies the source str
+/**
+ * @brief Clones the source string to owned C string.
+ *
+ * Allocates a null-terminated C string, and copies the source string.
+ *
+ * @return string Owned null terminated C string.
+ *
+ * @see clone_to_string
+ */
 inline char* clone_to_cstring(string str) {
     // NOTE: the returned char* is always allocated, so no null literal
     // (otherwise subsequent realloc results in undefined behaviour).
@@ -76,7 +129,15 @@ inline char* clone_to_cstring(string str) {
     return strndup(str.raw, str.len);
 }
 
-// Clones str into new string. The result is not null-terminated.
+/**
+ * @brief Clones the source string.
+ *
+ * Allocates and copies the source string, without inserting a null terminator.
+ *
+ * @return string Owned string
+ *
+ * @see clone_to_cstring
+ */
 string string_clone(string str) {
     string new_str = string_alloc(str.len);
     if (memmove(new_str.raw, str.raw, str.len) != new_str.raw) return NULL_STR;
@@ -89,6 +150,11 @@ void printn(char* text, usize len) {
         putchar(text[c++]);
 }
 
+/**
+ * @brief Prints a string
+ *
+ * Emits each character up to the sources length to stdout.
+ */
 inline void printstr(string str) {
     printn(str.raw, str.len);
 }

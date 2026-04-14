@@ -92,7 +92,7 @@ void _vec_destroy(Vec(void)* v);
 
 /* string specifics */
 
-Vec(char) cstring_to_vec(char* str); // always reallocates str
+Vec(char) cstring_to_vec(const char* str); // always reallocates str
 Vec(char) string_to_vec(string str); // same
 void vec_appendf(Vec(char) str, const char* format, ...) FORMAT_CHECK(2, 3);
 #endif // VEC_H

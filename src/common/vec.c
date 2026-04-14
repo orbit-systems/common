@@ -44,61 +44,102 @@ WEAK void _vec_destroy(Vec(void)* v) {
 
 /* string specifics */
 
-// Copies string to newly allocated owned vector. The result is null terminated.
+/**
+ * @brief Copies string to newly allocated owned vector.
+ *
+ * @param str source slice to copy
+ * @returns vec char vector containing str
+ *              (of capacity equal to the input's length).
+ *
+ * @warning The result is not null-terminated.
+ */
 Vec(char) string_to_owned(string str) {
-	Vec(char) v = vec_new(char, str.len + 1);
+    Vec(char) v = vec_new(char, str.len);
 
-	memcpy(v, str.raw, str.len);
-	v[str.len] = '\0';
-	return v;
+    memcpy(v, str.raw, str.len);
+    return v;
 }
 
-// Takes ownership of cstring and creates a vector. Moves the string in-place
-// to insert a leading header, and returning the new vec.
-Vec(char) cstring_to_vec(char* str) {
-	// The assumption is that you make a vec to append to it, so we reserve
-	// more up-front. The growth factor of 2 may be changed but idk
-	usize len = strlen(str);
-	str = realloc(str, len * 2 + sizeof(VecHeader));
+/* @brief Takes ownership of string and creates a char vector.
+ *
+ * Allocates a new space for a header at the start of the string's raw pointer,
+ * then moves the string in-place, and returning the new vec.
+ *
+ * @param str dynamically allocated null-terminated string.
+ *
+ * @warning The result is not null-terminated.
+ *
+ * @warning To allocate space, the function uses realloc, so the underlying
+ * data must have been allocated by an *alloc family function (i.e malloc,
+ * calloc, alligned_alloc etc).
+ **/
+Vec(char) cstring_to_vec(const char* str) {
+    // The assumption is that you make a vec to append to it, so we reserve
+    // more up-front. The growth factor of 2 may be changed but idk
+    usize len = strlen(str);
+    str = realloc((u8*)str, len * 2 + sizeof(VecHeader));
 
-	// memmove so that strings can overlap.
-	memmove(str, (u8*)str + sizeof(VecHeader), len);
+    // memmove so that strings can overlap.
+    memmove((u8*)str, (u8*)str + sizeof(VecHeader), len);
 
-	Vec(char) v = vec_elems_from_header(str);
+    Vec(char) v = vec_elems_from_header(str);
 
-	if (v == nullptr)
-		return nullptr;
+    if (v == nullptr)
+        return nullptr;
 
-	vec_cap(v) = len * 2;
-	vec_len(v) = len;
+    vec_cap(v) = len * 2;
+    vec_len(v) = len;
 
-	return v;
+    return v;
 }
 
-// Takes ownership of string and creates a vector. Moves the string in-place
-// to insert a leading header, and returning the new vec.
+/**
+ * @brief Takes ownership of string and creates a char vector.
+ *
+ * Allocates a new space for a header at the start of the string's raw pointer,
+ * then moves the string in-place, and returning the new vec.
+ *
+ * @param str dynamically allocated string, possibly null-terminated.
+ * @return vec char vector containing str
+ *         (with a capacity of 1.5x the input's length).
+ *
+ * @warning The result is not null-terminated.
+ *
+ * @warning To allocate space, the function uses realloc, so the underlying
+ * data must have been allocated by an *alloc family function (i.e malloc,
+ * calloc, alligned_alloc etc).
+ */
 Vec(char) string_to_vec(string str) {
-	// The assumption is that you make a vec to append to it, so we reserve
-	// more up-front. The growth factor of 2 may be changed but idk
-	str.raw = realloc(str.raw, str.len * 2 + sizeof(VecHeader));
+    // The assumption is that you make a vec to append to it, so we reserve
+    // more up-front.
+    str.raw = realloc(str.raw, str.len * 1.5 + sizeof(VecHeader));
 
-	// memmove so that strings can overlap.
-	memmove(str.raw, (u8*)str.raw + sizeof(VecHeader), str.len);
+    // memmove so that strings can overlap.
+    memmove(str.raw, (u8*)str.raw + sizeof(VecHeader), str.len);
 
-	Vec(char) v = vec_elems_from_header(str.raw);
+    Vec(char) v = vec_elems_from_header(str.raw);
 
-	if (v == nullptr)
-		return nullptr;
+    if (v == nullptr)
+        return nullptr;
 
-	vec_cap(v) = str.len * 2;
-	vec_len(v) = str.len;
+    vec_cap(v) += str.len / 2;
+    vec_len(v) = str.len;
 
-	return v;
+    return v;
 }
 
-// Appends formatted string to a Vec(char), leaving the result null-terminated. 
-// reallocating to make space for the new format. Begins printing at the 
-// source's trailing null character, or its length if none is present.
+/**
+ * @brief Format print to the end of a char vec
+ *
+ * Appends formatted string to a Vec(char), reallocating to make space.
+ *
+ * @param str string vector, possibly null-terminated
+ * @param format printf format specifier
+ * @param ... printf format arguments
+ *
+ * @warning The result is not null-terminated, nor does the function write
+ *          over any old null terminators.
+ */
 void vec_appendf(Vec(char) str, const char* format, ...) {
     va_list a;
     va_start(a, format);
@@ -107,14 +148,9 @@ void vec_appendf(Vec(char) str, const char* format, ...) {
 
     usize printlen = 1 + vsnprintf("", 0, format, a);
 
-    // if already null-terminated, go back and print over it
-    if (str[vec_len(str)] == '\0')
-	vec_len(str)--;
-
     vec_reserve(&str, printlen);
 
     vsnprintf(&str[vec_len(str)], printlen, format, b);
-    str[printlen] = '\0';
 
     va_end(a);
     va_end(b);
