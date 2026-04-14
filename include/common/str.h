@@ -36,17 +36,84 @@ typedef struct string {
 
 #define string_free(str) free(str.raw)
 
-char*  clone_to_cstring(string str); // this allocates
-void   printstr(string str);
+/// \brief Allocates len bytes for a new string
+///
+/// \param len Length of buffer
+///
+/// \return string A string with a buffer of at least length len. The resulting 
+///               buffer is zero-filled.
+///
+/// \note a null-terminated string can be allocated by providing len + 1.
+string string_alloc(usize len);
+
+/// \brief Clones the source string to owned C string.
+///
+/// Allocates a null-terminated C string, and copies the source string.
+///
+/// \return cstring Owned null terminated C string.
+///
+/// \see clone_to_string
+char* clone_to_cstring(string str); // this allocates
+
+/// \brief Prints a string
+///
+/// Emits each character up to the sources length to stdout.
+void printstr(string str);
+
+/// \brief Prints to a newly allocated string.
+///
+/// \param format printf format specifier
+/// \param ... printf format arguments
+///
+/// \return str null-terminated string, or NULL_STR on allocation fail.
 string strprintf(char* format, ...) FORMAT_CHECK(1, 2);
 
-string  string_alloc(usize len);
-string  string_clone(string str); // this allocates as well
-string  string_concat(string a, string b); // allocates
-void    string_concat_buf(string buf, string a, string b); // this does not
+/// \brief Clones the source string.
+///
+/// Allocates and copies the source string, without inserting a null terminator.
+///
+/// \return string Owned string
+///
+/// \see clone_to_cstring
+string string_clone(string str); // this allocates as well
 
-u8   string_cmp(string a, string b);
+/// \brief Concatenates two strings.
+///
+/// Allocates a buffer containing the concatenation of a and b.
+///
+/// \return str Allocated string containing ab, without a null terminator.
+string string_concat(string a, string b); // allocates
+
+/// \brief Concatenates two strings into buf.
+///
+/// \param[out] buf buffer of minimum length a.len + b.len.
+///            buf is filled with the concatenation ab, without a null terminator
+///
+/// \warning buffer must be large enough contain a and b, crashes otherwise.
+void string_concat_buf(string buf, string a, string b); // this does not
+
+/// \brief Compares two strings.
+///
+/// \return cond Returns 0 when equal, -1 when a < b, and 1 when a > b
+///             (their byte-wise, aggregate u8 difference is used to compare).
+///
+/// \note for equality, string_eq is more efficient, using heuristic length 
+/// checks before checking character by character.
+///
+/// \see string_eq
+u8 string_cmp(string a, string b);
+
+/// \brief Checks if two strings are equal.
+///
+/// \return cond true if equal, else false
+///
+/// \see string_cmp
 bool string_eq(string a, string b);
+
+/// \brief Checks if string ends with another.
+///
+/// \return cond true if yes, else false. If the ending string is larger than 
+///              the source, returns false.
 bool string_ends_with(string source, string ending);
 
 #endif // ORBIT_STRING_H

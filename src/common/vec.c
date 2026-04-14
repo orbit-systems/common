@@ -44,72 +44,18 @@ WEAK void _vec_destroy(Vec(void)* v) {
 
 /* string specifics */
 
-/**
- * @brief Copies string to newly allocated owned vector.
- *
- * @param str source slice to copy
- * @returns vec char vector containing str
- *              (of capacity equal to the input's length).
- *
- * @warning The result is not null-terminated.
- */
-Vec(char) string_to_owned(string str) {
+Vec(char) string_to_vec(string str) {
     Vec(char) v = vec_new(char, str.len);
 
     memcpy(v, str.raw, str.len);
     return v;
 }
 
-/* @brief Takes ownership of string and creates a char vector.
- *
- * Allocates a new space for a header at the start of the string's raw pointer,
- * then moves the string in-place, and returning the new vec.
- *
- * @param str dynamically allocated null-terminated string.
- *
- * @warning The result is not null-terminated.
- *
- * @warning To allocate space, the function uses realloc, so the underlying
- * data must have been allocated by an *alloc family function (i.e malloc,
- * calloc, alligned_alloc etc).
- **/
-Vec(char) cstring_to_vec(const char* str) {
-    // The assumption is that you make a vec to append to it, so we reserve
-    // more up-front. The growth factor of 2 may be changed but idk
-    usize len = strlen(str);
-    str = realloc((u8*)str, len * 2 + sizeof(VecHeader));
-
-    // memmove so that strings can overlap.
-    memmove((u8*)str, (u8*)str + sizeof(VecHeader), len);
-
-    Vec(char) v = vec_elems_from_header(str);
-
-    if (v == nullptr)
-        return nullptr;
-
-    vec_cap(v) = len * 2;
-    vec_len(v) = len;
-
-    return v;
+inline Vec(char) cstring_to_vec(const char* str) {
+    return string_to_vec(string_wrap(str));
 }
 
-/**
- * @brief Takes ownership of string and creates a char vector.
- *
- * Allocates a new space for a header at the start of the string's raw pointer,
- * then moves the string in-place, and returning the new vec.
- *
- * @param str dynamically allocated string, possibly null-terminated.
- * @return vec char vector containing str
- *         (with a capacity of 1.5x the input's length).
- *
- * @warning The result is not null-terminated.
- *
- * @warning To allocate space, the function uses realloc, so the underlying
- * data must have been allocated by an *alloc family function (i.e malloc,
- * calloc, alligned_alloc etc).
- */
-Vec(char) string_to_vec(string str) {
+Vec(char) realloc_string_to_vec(string str) {
     // The assumption is that you make a vec to append to it, so we reserve
     // more up-front.
     str.raw = realloc(str.raw, str.len * 1.5 + sizeof(VecHeader));
@@ -128,18 +74,10 @@ Vec(char) string_to_vec(string str) {
     return v;
 }
 
-/**
- * @brief Format print to the end of a char vec
- *
- * Appends formatted string to a Vec(char), reallocating to make space.
- *
- * @param str string vector, possibly null-terminated
- * @param format printf format specifier
- * @param ... printf format arguments
- *
- * @warning The result is not null-terminated, nor does the function write
- *          over any old null terminators.
- */
+inline Vec(char) realloc_cstring_to_vec(char* str) {
+    return realloc_string_to_vec(string_wrap(str));
+}
+
 void vec_appendf(Vec(char) str, const char* format, ...) {
     va_list a;
     va_start(a, format);

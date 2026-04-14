@@ -92,7 +92,81 @@ void _vec_destroy(Vec(void)* v);
 
 /* string specifics */
 
-Vec(char) cstring_to_vec(const char* str); // always reallocates str
-Vec(char) string_to_vec(string str); // same
-void vec_appendf(Vec(char) str, const char* format, ...) FORMAT_CHECK(2, 3);
+
+/// \brief Copies string to newly allocated owned vector.
+///
+/// \param str source slice to copy
+/// \return vec char vector containing str
+///              (of capacity equal to the input's length).
+///
+/// \warning The result is not null-terminated.
+///
+/// It may be preferable to realloc in-place to reduce fragmentation. For
+/// dynamically allocated strings,
+/// \see realloc_string_to_vec
+Vec(char) string_to_vec(string str);
+
+/// \brief Copies a C string to newly allocated owned vector.
+///
+/// \param str source C string to copy
+/// \return vec char vector containing str
+///              (of capacity equal to the input's length).
+///
+/// \warning The result is not null-terminated.
+///
+/// It may be preferable to create a vector in-place to reduce fragmentation.
+/// For dynamically allocated C strings,
+/// \see realloc_string_to_vec
+Vec(char) cstring_to_vec(const char* str);
+
+/// \brief Takes ownership of string and creates a char vector.
+///
+/// Allocates a new space for a header at the start of the string's raw pointer,
+/// then moves the string in-place, and returning the new vec.
+///
+/// \param str dynamically allocated string, possibly null-terminated.
+/// \return vec char vector containing str
+///         (with a capacity of 1.5x the input's length).
+///
+/// \warning The result is not null-terminated.
+///
+/// \warning To allocate space, the function uses realloc, so the underlying
+/// data must have been allocated by an *alloc family function (i.e malloc,
+/// calloc, alligned_alloc etc).
+///
+/// For a copy only function,
+/// \see string_to_vec
+Vec(char) realloc_string_to_vec(string str);
+
+/// \brief Takes ownership of string and creates a char vector.
+///
+/// Allocates a new space for a header at the start of the str,
+/// then moves the string in-place, and returning the new vec.
+///
+/// \param str dynamically allocated null-terminated string.
+/// \return vec char vector containing str
+///         (with a capacity of 1.5x the input's length).
+///
+/// \warning The result is not null-terminated.
+///
+/// \warning To allocate space, the function uses realloc, so the source str
+/// must have been allocated by an *alloc family function (i.e malloc,
+/// calloc, alligned_alloc etc).
+///
+/// For a copy only function,
+/// \see cstring_to_vec
+Vec(char) realloc_cstring_to_vec(char* str);
+
+/// \brief Format print to the end of a char vec
+///
+/// Appends formatted string to a Vec(char), reallocating to make space.
+///
+/// \param str string vector, possibly null-terminated
+/// \param format printf format specifier
+/// \param ... printf format arguments
+///
+/// \warning The result is not null-terminated, nor does the function write
+///          over any old null terminators.
+FORMAT_CHECK(2, 3) void vec_appendf(Vec(char) str, const char* format, ...);
+
 #endif // VEC_H
